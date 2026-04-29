@@ -10,7 +10,7 @@ def load_data(split: str):
         print(f"Không thể load được data: {file_path}")
         return None
     else:
-        data = pd.read_csv(file_path)
+        data = pd.read_csv(file_path, low_memory=False)
     return data
     
     
