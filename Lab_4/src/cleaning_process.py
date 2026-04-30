@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def check_same_dtypes(df1, df2):
     if (df1.dtypes == df2.dtypes).all():
@@ -52,4 +53,47 @@ def check_unique_values(df, dataset_name):
     print(f"Unique values in {dataset_name}:")
     print(df.nunique())
 
-def 
+def handle_whitespace(df, dataset_name):
+    print(f"Whitespace in {dataset_name}:")
+    df.replace(r'^\s*$', np.nan, regex=True, inplace=True)
+    return df
+
+def drop_columns(df, dataset_name):
+    print(f"Missing values in {dataset_name}:")
+    print(df.isnull().sum())
+    
+    cols_to_drop = []
+    for col in df.columns:
+        missing_percentage = df[col].isnull().mean() * 100
+        # drop column if missing values are more than 80% of the total rows
+        if missing_percentage >= 80 and col not in cols_to_drop:
+                print(f"Column '{col}' has {missing_percentage:.2f}% missing values. Consider dropping this column.")
+                cols_to_drop.append(col)
+                continue
+        
+        # drop column if it has only one unique value
+        if df[col].nunique() <= 1 and col not in cols_to_drop:
+                print(f"Column '{col}' has only one unique value. Consider dropping this column.")
+                cols_to_drop.append(col)
+                continue
+            
+        # drop column if it has more than 90% unique values
+        if df[col].nunique() > len(df) * 0.9 and col not in cols_to_drop:
+            print(f"Column '{col}' has {df[col].nunique()} unique values, which is more than 90% of the total rows. Consider dropping this column.")
+            cols_to_drop.append(col)
+            continue
+        
+    df.drop(columns=cols_to_drop, inplace=True)
+    return df
+
+def drop_duplicate_columns(df):
+    duplicate_cols = df.columns[df.columns.duplicated()]
+    if len(duplicate_cols) > 0:
+        print(f"Duplicate columns found: {duplicate_cols}")
+        df.drop(columns=duplicate_cols, inplace=True)
+    else:
+        print("No duplicate columns found.")
+    return df
+
+def export_data(df, file_path):
+    df.to_csv(file_path, index=False)
